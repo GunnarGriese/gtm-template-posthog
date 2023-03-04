@@ -1,0 +1,5 @@
+homepage: "https://tagticians.com"
+documentation: "https://github.com/tagticians/posthog-gtm-template"
+versions:
+  - sha: b9fcf79f7b72eb8fe7e80ed97ac119704b1b5a9e
+    changeNotes: Added ability to set custom event name instead of using dataLayer event variable.
