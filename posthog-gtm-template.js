@@ -37,12 +37,14 @@ const convertAllowLists = allowListTable => {
     return allowListTable;
 };
 
+// Convert string 
+
 // Tag type evaluation
 if (data.tagType === 'init') {
     let configObj = {};
     // Endpoint config
-    const apiHost = data.apiHost; // 'https://app.posthog.com'
-    const apiKey = data.apiKey; // phc_8TaNkMkVxfBTnysLyRRlAL0KTuGOeudKLXgL1upbWOh
+    const apiHost = data.apiHost;
+    const apiKey = data.apiKey;
     const postHogEndpoint = apiHost + "/static/array.js";
     configObj.apiHost = apiHost;
     log(JSON.stringify(configObj));
@@ -119,7 +121,18 @@ if (data.tagType === 'init') {
         callInWindow('posthog.reset');
     }
 } else if (data.tagType === 'peopleSet') {
-    // Run the people.set() function
+    const peopleSet = mapEventData(data.peopleSetList);
+    callInWindow('posthog.people.set', peopleSet);
+} else if (data.tagType === 'register' || data.tagType === 'registerOnce') {
+    const registerParams = mapEventData(data.registerList);
+    if (data.tagType === 'register') {
+        callInWindow('posthog.register', registerParams);
+    } else {
+        callInWindow('posthog.register_once', registerParams);
+    }
+} else if (data.tagType === 'unregister') {
+    const unregisterProp = data.unregisterProp;
+    callInWindow('posthog.unregister', unregisterProp);
 } else {
     log('Invalid tag type - Please select a valid tag type.');
 }
