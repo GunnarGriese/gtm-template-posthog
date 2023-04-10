@@ -82,7 +82,3 @@ For the callback function to work, you need to reference a custom JS variable in
 ## Troubleshooting
 
 If you encounter any issues, please check the browser console for error messages. The template uses `logToConsole` to provide debug information and error messages. If you need further assistance or have feature requests, please create an issue in this repo.
-
-## License
-
-This template is released under the [MIT License](https://opensource.org/licenses/MIT).
