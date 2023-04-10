@@ -54,6 +54,18 @@ ___TEMPLATE_PARAMETERS___
       {
         "value": "peopleSet",
         "displayValue": "People Set"
+      },
+      {
+        "value": "register",
+        "displayValue": "Register"
+      },
+      {
+        "value": "registerOnce",
+        "displayValue": "Register Once"
+      },
+      {
+        "value": "unregister",
+        "displayValue": "Unregister"
       }
     ],
     "simpleValueType": true
@@ -231,44 +243,13 @@ ___TEMPLATE_PARAMETERS___
         "groupStyle": "ZIPPY_CLOSED",
         "subParams": [
           {
-            "type": "CHECKBOX",
-            "name": "advanced_disable_decide",
-            "checkboxText": "advanced_disable_decide",
-            "simpleValueType": true,
-            "defaultValue": false
-          },
-          {
-            "type": "CHECKBOX",
-            "name": "secure_cookie",
-            "checkboxText": "secure_cookie",
-            "simpleValueType": true,
-            "defaultValue": false
-          },
-          {
-            "type": "CHECKBOX",
-            "name": "enable_loaded",
-            "checkboxText": "enable_loaded",
-            "simpleValueType": true,
-            "defaultValue": false
-          },
-          {
             "type": "TEXT",
             "name": "loaded",
             "displayName": "Callback function (loaded)",
             "simpleValueType": true,
-            "enablingConditions": [
-              {
-                "paramName": "enable_loaded",
-                "paramValue": true,
-                "type": "EQUALS"
-              }
-            ],
-            "valueValidators": [
-              {
-                "type": "NON_EMPTY"
-              }
-            ],
-            "help": "Use a Custom JavaScript Variable that returns a function."
+            "enablingConditions": [],
+            "help": "Use a Custom JavaScript Variable that returns a function.",
+            "valueHint": "Custom JavaScript Variable"
           }
         ]
       }
@@ -373,6 +354,103 @@ ___TEMPLATE_PARAMETERS___
       {
         "paramName": "tagType",
         "paramValue": "virtualPageView",
+        "type": "EQUALS"
+      }
+    ]
+  },
+  {
+    "type": "GROUP",
+    "name": "peopleSetGroup",
+    "displayName": "People Set",
+    "groupStyle": "NO_ZIPPY",
+    "subParams": [
+      {
+        "type": "SIMPLE_TABLE",
+        "name": "peopleSetList",
+        "displayName": "Add People Set",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "",
+            "displayName": "Parameter Name",
+            "name": "name",
+            "type": "TEXT",
+            "isUnique": true,
+            "valueValidators": [
+              {
+                "type": "NON_EMPTY"
+              }
+            ]
+          },
+          {
+            "defaultValue": "",
+            "displayName": "Value",
+            "name": "value",
+            "type": "TEXT",
+            "valueValidators": [
+              {
+                "type": "NON_EMPTY"
+              }
+            ]
+          }
+        ],
+        "valueValidators": []
+      }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "tagType",
+        "paramValue": "peopleSet",
+        "type": "EQUALS"
+      }
+    ]
+  },
+  {
+    "type": "GROUP",
+    "name": "registerGroup",
+    "displayName": "Register",
+    "groupStyle": "NO_ZIPPY",
+    "subParams": [
+      {
+        "type": "SIMPLE_TABLE",
+        "name": "registerList",
+        "displayName": "Add Register",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "",
+            "displayName": "Parameter Name",
+            "name": "name",
+            "type": "TEXT",
+            "isUnique": true,
+            "valueValidators": [
+              {
+                "type": "NON_EMPTY"
+              }
+            ]
+          },
+          {
+            "defaultValue": "",
+            "displayName": "Value",
+            "name": "value",
+            "type": "TEXT",
+            "valueValidators": [
+              {
+                "type": "NON_EMPTY"
+              }
+            ]
+          }
+        ],
+        "valueValidators": []
+      }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "tagType",
+        "paramValue": "register",
+        "type": "EQUALS"
+      },
+      {
+        "paramName": "tagType",
+        "paramValue": "registerOnce",
         "type": "EQUALS"
       }
     ]
@@ -548,6 +626,28 @@ ___TEMPLATE_PARAMETERS___
         "type": "EQUALS"
       }
     ]
+  },
+  {
+    "type": "GROUP",
+    "name": "unregisterGroup",
+    "displayName": "Unregister",
+    "groupStyle": "NO_ZIPPY",
+    "subParams": [
+      {
+        "type": "TEXT",
+        "name": "unregisterProp",
+        "displayName": "Property to unregister",
+        "simpleValueType": true,
+        "help": "Can be 1 string only (representing the superproperty)"
+      }
+    ],
+    "enablingConditions": [
+      {
+        "paramName": "tagType",
+        "paramValue": "unregister",
+        "type": "EQUALS"
+      }
+    ]
   }
 ]
 
@@ -563,17 +663,16 @@ const injectScript = require('injectScript');
 const makeTableMap = require('makeTableMap');
 const makeNumber = require('makeNumber');
 const getType = require('getType');
-//const copyFromDataLayer = require('copyFromDataLayer');
 const math = require('Math');
 const log = require('logToConsole');
 const JSON = require('JSON');
 
 // Helper methods
 const fail = msg => {
-    log('We fail!');
     log(msg);
     data.gtmOnFailure();
 };
+
 
 // Map event parameters
 const mapEventData = dataTable => {
@@ -593,15 +692,17 @@ const convertAllowLists = allowListTable => {
     return allowListTable;
 };
 
+// Convert string 
+
 // Tag type evaluation
 if (data.tagType === 'init') {
     let configObj = {};
     // Endpoint config
-    const apiHost = data.apiHost; // 'https://app.posthog.com'
-    const apiKey = data.apiKey; // phc_8TaNkMkVxfBTnysLyRRlAL0KTuGOeudKLXgL1upbWOh
+    const apiHost = data.apiHost;
+    const apiKey = data.apiKey;
     const postHogEndpoint = apiHost + "/static/array.js";
     configObj.apiHost = apiHost;
-    log(JSON.stringify(configObj));
+ 
     // Basic Tracker config
     const autocapture_tuning = data.autocapture_tuning;
     const autocapture_off = data.autocapture_off;
@@ -624,18 +725,20 @@ if (data.tagType === 'init') {
     if (disable_session_recording) configObj.disable_session_recording = true;
     if (enable_recording_console_log) configObj.enable_recording_console_log = true;
     if (mask_all_text) configObj.mask_all_text = true;
-    log(data.loaded);
-    if (data.enable_loaded) configObj.loaded = data.loaded; //function() {log('hello world');};
-    log(JSON.stringify(configObj));
+    
+    // Advanced Tracker config
+    if (data.loaded) log('testing loaded');
+    if (data.loaded) configObj.loaded = data.loaded;
+
     // Callback function after successful script request to PostHog
-    const success = msg => {
-        log('We succeed!');
+    const success = () => {
         callInWindow('posthog.init', apiKey, configObj);
         data.gtmOnSuccess();
     };
 
     // Request the script and call init method once script is loaded
     injectScript(postHogEndpoint, success, fail, 'postHogSnippet');
+
 } else if (data.tagType === 'event' || data.tagType === 'virtualPageView') {
     const eventName = data.customEventName;
     const eventParams = mapEventData(data.eventParameterList);
@@ -669,44 +772,28 @@ if (data.tagType === 'init') {
 } else if (data.tagType === 'alias') {
     callInWindow('posthog.alias', data.aliasdistinctId, data.aliasId);
 } else if (data.tagType === 'reset') {
-    if(data.resetDeviceId) {
-      callInWindow('posthog.reset', true);
+    if (data.resetDeviceId) {
+        callInWindow('posthog.reset', true);
     } else {
-      callInWindow('posthog.reset');
+        callInWindow('posthog.reset');
     }
 } else if (data.tagType === 'peopleSet') {
-    // Run the people.set() function
+    const peopleSet = mapEventData(data.peopleSetList);
+    callInWindow('posthog.people.set', peopleSet);
+} else if (data.tagType === 'register' || data.tagType === 'registerOnce') {
+    const registerParams = mapEventData(data.registerList);
+    if (data.tagType === 'register') {
+        callInWindow('posthog.register', registerParams);
+    } else {
+        callInWindow('posthog.register_once', registerParams);
+    }
+} else if (data.tagType === 'unregister') {
+    const unregisterProp = data.unregisterProp;
+    callInWindow('posthog.unregister', unregisterProp);
 } else {
-    log('Invalid tag type - Please select a valid tag type.');
+    fail('Invalid tag type - Please select a valid tag type.');
 }
 
-/*
-const initPostHog = (apiHost, apiKey) => {
-    // Return the existing 'posthog' object if available
-    let posthog = copyFromWindow('posthog');
-    if (posthog) {
-        return posthog;
-    }
-    // If 'posthog' object not available, initialize it
-    log('init posthog');
-    setInWindow('posthog', []);
-    setInWindow('posthog.__SV', 1);
-    //let posthog = copyFromWindow('posthog');
-    const posthogQueue = createQueue('posthog._i');
-    posthogQueue([apiKey, {
-        'api_host': apiHost,
-        'autocapture': {
-            'event_allowlist': ['click', 'change', 'submit'], // DOM events from this list ['click', 'change', 'submit']
-            //'url_allowlist': ['posthog.com\.\/docs\/.*'], // strings or RegExps
-            'element_allowlist': ['a', 'button', 'form', 'input', 'select', 'textarea', 'label'], // DOM elements from this list ['a', 'button', 'form', 'input', 'select', 'textarea', 'label']
-            //'css_selector_allowlist': ['[ph-autocapture]'] // List of CSS selectors
-        }
-    }]);
-    return copyFromWindow('posthog');
-
-};
-//const posthog = initPostHog(apiHost, apiKey);
-*/
 data.gtmOnSuccess();
 
 
@@ -1296,6 +1383,45 @@ ___WEB_PERMISSIONS___
                     "boolean": true
                   }
                 ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "posthog.unregister"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  }
+                ]
               }
             ]
           }
@@ -1338,6 +1464,6 @@ scenarios: []
 
 ___NOTES___
 
-Created on 04/03/2023, 21:24:46
+Created on 10/04/2023, 17:24:10
 
 

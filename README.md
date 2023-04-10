@@ -1,4 +1,4 @@
-# PostHog GTM Tag Template
+# PostHog GTM Tag Template (v0.0.1)
 
 This is a Google Tag Manager (GTM) tag template for [PostHog](https://posthog.com/), an open-source product analytics platform that helps you understand user behavior on your website or app. This template allows you to integrate PostHog tracking into your GTM container and manage events, user properties, and configuration settings.
 
@@ -17,10 +17,11 @@ This is a Google Tag Manager (GTM) tag template for [PostHog](https://posthog.co
 
 To use this tag template in your GTM container, follow these steps:
 
-1. In your GTM workspace, click on "Templates" in the left sidebar.
-2. Click on "New" in the Tag Templates section.
-3. Click on the "Import" button and upload the .tpl in this repo.
-4. Save the template and add a new tag using the imported PostHog GTM Tag Template.
+1. Download the template [here](PostHog.tpl)
+2. In your GTM workspace, click on "Templates" in the left sidebar.
+3. Click on "New" in the Tag Templates section.
+4. Click on the "Import" button and upload the .tpl in this repo.
+5. Save the template and add a new tag using the imported PostHog GTM Tag Template.
 
 ## Usage
 
@@ -28,7 +29,7 @@ After importing the template, you can create new tags using this template and co
 
 ### Tag Types
 
-- `init`: Initialize the [PostHog tracking library](https://posthog.com/docs/libraries/js#add-to-your-website--app)).
+- `init`: Initialize the [PostHog tracking library](https://posthog.com/docs/libraries/js#add-to-your-website--app).
 - `event`: Capture a [custom event](https://posthog.com/docs/libraries/js#send-custom-events-with-posthogcapture) with custom properties.
 - `virtualPageView`: Capture a [virtual pageview](https://posthog.com/docs/libraries/js#one-page-apps-and-page-views) with custom properties (for SPAs).
 - `identify`: [Identify](https://posthog.com/docs/libraries/js#identifying-users) a user with user properties.
@@ -41,7 +42,9 @@ After importing the template, you can create new tags using this template and co
 
 ### Configuration options for `init` tag type
 
-See detailed documentation for each of the configuration options [here](https://posthog.com/docs/libraries/js#config). The configuration options represent in the tag template are:
+See detailed documentation for each of the configuration options [here](https://posthog.com/docs/libraries/js#config). The configuration options represented in the tag template are:
+
+#### Basic tracker configuration
 
 - `apiHost`: The domain of your PostHog instance (e.g., 'https://app.posthog.com'). The tag will append "/static/array.js" to this value to build the actual request URL.
 - `apiKey`: Your PostHog project API key.
@@ -54,6 +57,16 @@ See detailed documentation for each of the configuration options [here](https://
 - `disable_session_recording`: Enable/disable session recording.
 - `enable_recording_console_log`: Enable/disable console log recording.
 - `mask_all_text`: Enable/disable masking all text.
+
+#### Advanced tracker configuration
+
+- `loaded`: A function to be called when the PostHog library has loaded.
+- more to come...
+
+The PostHog library can be initiated with a callback function (e.g., call `identify`) that is called when the library has loaded.
+For the callback function to work, you need to reference a custom JS variable in the field `loaded`. The variable needs to return a function like so:
+
+![loaded function](/img/posthog-loaded-callback.png)
 
 ### Additional options for other tag types
 
